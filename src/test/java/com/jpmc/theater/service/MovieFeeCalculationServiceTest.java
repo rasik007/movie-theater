@@ -39,6 +39,22 @@ public class MovieFeeCalculationServiceTest {
 
     }
 
+    @Test
+    public void sequenceCodeBasedDiscount() {
+
+        Movie spiderMan = new Movie("Spider-Man: No Way Home", Duration.ofMinutes(90),10, 0);
+        Showing showing = new Showing(spiderMan, 1, LocalDateTime.of(LocalDate.now(), LocalTime.of(17, 0)));
+        assertEquals(7.0, movieFeeCalculationService.calculateTicketPrice(showing));
+
+        spiderMan = new Movie("Spider-Man: No Way Home", Duration.ofMinutes(90),10, 0);
+        showing = new Showing(spiderMan, 2, LocalDateTime.of(LocalDate.now(), LocalTime.of(17, 0)));
+        assertEquals(8.0, movieFeeCalculationService.calculateTicketPrice(showing));
+
+        spiderMan = new Movie("Spider-Man: No Way Home", Duration.ofMinutes(90),10, 0);
+        showing = new Showing(spiderMan, 7, LocalDateTime.of(LocalDate.now(), LocalTime.of(17, 0)));
+        assertEquals(9.0, movieFeeCalculationService.calculateTicketPrice(showing));
+
+    }
 
 
 }
