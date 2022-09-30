@@ -3,6 +3,7 @@ package com.jpmc.theater.model;
 import lombok.Data;
 import lombok.ToString;
 
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.Objects;
 

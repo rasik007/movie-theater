@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -31,7 +32,7 @@ public class TheaterReservationServiceTest {
                 LocalDateTime.of(LocalDate.now(), LocalTime.of(9, 0))
         );
         Reservation reservation = new Reservation(customer,showing,3);
-        assertTrue(theaterReservationService.getTotalFeeByReservation(reservation) == 28.5);
+        assertTrue(theaterReservationService.getTotalFeeByReservation(reservation).compareTo( new BigDecimal( 28.5))==0);
 
     }
 
@@ -39,7 +40,8 @@ public class TheaterReservationServiceTest {
     void totalFeeForCustomer() {
         Customer john = new Customer("John Doe", "id-12345");
         Reservation reservation = theaterReservationService.reserveTickets(john, 2, 4);
-        assertEquals(theaterReservationService.getTotalFeeByReservation(reservation), 37.5);
+        System.out.println(theaterReservationService.getTotalFeeByReservation(reservation));
+        assertEquals(theaterReservationService.getTotalFeeByReservation(reservation).doubleValue(),37.48);
     }
 
 }

@@ -4,6 +4,8 @@ import com.jpmc.theater.model.Reservation;
 import com.jpmc.theater.model.Showing;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
@@ -12,50 +14,50 @@ public class MovieFeeCalculationService {
 
     private static int MOVIE_CODE_SPECIAL = 1;
 
-    public double calculateFee(Showing showing, int ticketCount) {
-       return calculateTicketPrice(showing) * ticketCount;
+    public BigDecimal calculateFee(Showing showing, int ticketCount) {
+       return calculateTicketPrice(showing).multiply(new BigDecimal(ticketCount));
     }
 
-    public double calculateTicketPrice(Showing showing) {
+    public BigDecimal calculateTicketPrice(Showing showing) {
         double movieTicketPrice =  showing.getMovie().getTicketPrice();
         int specialCode = showing.getMovie().getSpecialCode();
-        double discount = getDiscount(showing, showing.getSequenceOfTheDay(),specialCode,movieTicketPrice);
-        return movieTicketPrice - discount;
+        BigDecimal discount = getDiscount(showing, showing.getSequenceOfTheDay(),specialCode,movieTicketPrice);
+        return new BigDecimal(movieTicketPrice).subtract(discount).setScale(2, RoundingMode.HALF_UP);
     }
 
-    private double getDiscount(Showing showing, int showSequence, int specialCode , double ticketPrice) {
+    private BigDecimal getDiscount(Showing showing, int showSequence, int specialCode , double ticketPrice) {
 
 
-        double maxDiscount = Double.MIN_VALUE;
-        double specialDiscount = getDiscountBySpecialCode(specialCode, ticketPrice);
+        BigDecimal maxDiscount = BigDecimal.ZERO;
+        BigDecimal specialDiscount = getDiscountBySpecialCode(specialCode, ticketPrice);
 
         maxDiscount = specialDiscount;
 
-        double sequenceDiscount = getDiscountBySequence(showSequence);
+        BigDecimal sequenceDiscount = getDiscountBySequence(showSequence);
 
-        if(sequenceDiscount > maxDiscount) {
+        if(sequenceDiscount.compareTo(maxDiscount) > 0) {
             maxDiscount = sequenceDiscount;
         }
 
-        double showTimeDiscount = getDiscountByShowTime(showing);
-        if(showTimeDiscount > maxDiscount) {
+        BigDecimal showTimeDiscount = getDiscountByShowTime(showing);
+        if(showTimeDiscount.compareTo( maxDiscount) >0) {
             maxDiscount = showTimeDiscount;
         }
         return maxDiscount;
     }
 
 
-    public double getDiscountBySpecialCode(int specialCode, double ticketPrice) {
+    public BigDecimal getDiscountBySpecialCode(int specialCode, double ticketPrice) {
         double specialDiscount = 0;
 
         if (MOVIE_CODE_SPECIAL == specialCode) {
             specialDiscount = ticketPrice * 0.2;  // 20% discount for special movie
         }
 
-        return specialDiscount;
+        return new BigDecimal(specialDiscount).setScale(2, RoundingMode.HALF_UP);
     }
 
-    public double getDiscountBySequence(int showSequence) {
+    public BigDecimal getDiscountBySequence(int showSequence) {
         double sequenceDiscount = 0;
         if (showSequence == 1) {
             sequenceDiscount = 3; // $3 discount for 1st show
@@ -64,10 +66,10 @@ public class MovieFeeCalculationService {
         } else if (showSequence == 7) {
             sequenceDiscount = 1;
         }
-        return sequenceDiscount;
+        return new BigDecimal(sequenceDiscount);
     }
 
-    public double getDiscountByShowTime(Showing showing) {
+    public BigDecimal getDiscountByShowTime(Showing showing) {
         double showTimeDiscount = 0;
 
         LocalDateTime localTime = showing.getShowStartTime();
@@ -76,10 +78,10 @@ public class MovieFeeCalculationService {
         if(hour>=11 &&  hour<=16) {
             showTimeDiscount = showing.getMovie().getTicketPrice() * 0.25;
         }
-        return showTimeDiscount;
+        return new BigDecimal(showTimeDiscount).setScale(2,RoundingMode.HALF_UP);
     }
 
-    public double calculateFee(Reservation reservation) {
+    public BigDecimal calculateFee(Reservation reservation) {
         return  calculateFee(reservation.getShowing(),reservation.getAudienceCount());
     }
 }
